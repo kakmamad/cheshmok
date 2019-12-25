@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        id="cheshmak-cordova-plugin"
+        version="2.0.0">
+
+    <name>Cheshmak Cordova Plugin</name>
+    <description>Integration of Cheshmak library to Cordova</description>
+    <author>Amin Bahiraei</author>
+
+    <keywords>cordova,plugin,cheshmak,push</keywords>
+    <engines>
+        <engine name="cordova" version=">=3.0.0" />
+    </engines>
+
+    <js-module src="www/cheshmak.js" name="cheshmak">
+        <clobbers target="window.cheshmak" />
+    </js-module>
+
+    <!-- android -->
+    <platform name="android">
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="CheshmakCordovaPlugin" >
+                <param name="android-package" value="me.cheshmak.cordova.CheshmakCordovaPlugin"/>
+            </feature>
+        </config-file>
+
+        <source-file src="src/CheshmakCordovaPlugin.java" target-dir="src/me/cheshmak/cordova" />
+        <source-file src="src/CheshmakApplication.java" target-dir="src/me/cheshmak/cordova" />
+        <source-file src="src/CheshmakConfigException.java" target-dir="src/me/cheshmak/cordova" />
+        <source-file src="src/CheshmakConfigReader.java" target-dir="src/me/cheshmak/cordova" />
+
+        <framework src="src/build.gradle" custom="true" type="gradleReference" />
+        <preference name="PLAY_SERVICES_VERSION" default="16.0.0"/>
+        <framework src="com.google.android.gms:play-services-gcm:$PLAY_SERVICES_VERSION" />
+        <framework src="com.google.android.gms:play-services-basement:$PLAY_SERVICES_VERSION" />
+        <framework src="com.google.android.gms:play-services-ads:$PLAY_SERVICES_VERSION" />
+
+
+
+
+        <!-- hook to simplify default installation -->
+        <hook type="before_plugin_install" src="scripts/beforeAndroidInstall.js" />
+        <hook type="before_plugin_uninstall" src="scripts/beforeAndroidUninstall.js" />
+        <hook type="after_prepare" src="scripts/afterAndroidPrepare.js" />
+
+        <config-file target="AndroidManifest.xml" parent="/*">
+            <permission android:name="$PACKAGE_NAME.permission.C2D_MESSAGE" android:protectionLevel="signature" />
+            <uses-permission android:name="$PACKAGE_NAME.permission.C2D_MESSAGE" />
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+            <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+            <uses-permission android:name="android.permission.INTERNET" />
+            <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+            <uses-permission android:name="com.google.android.c2dm.permission.RECEIVE" />
+            <uses-permission android:name="android.permission.WAKE_LOCK" />
+            <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+            <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+        </config-file>
+
+        <config-file target="AndroidManifest.xml" parent="/manifest/application">
+            <service
+                    android:name="me.cheshmak.android.sdk.core.push.CheshmakPushRegistration"
+                    android:exported="false" />
+            <service
+                    android:name="me.cheshmak.android.sdk.core.push.CheshIDListenerService"
+                    android:exported="false" >
+                <intent-filter>
+                    <action android:name="com.google.android.gms.iid.InstanceID" />
+                </intent-filter>
+            </service>
+            <service android:name="me.cheshmak.android.sdk.core.push.CheshGcmListenerService" />
+
+            <receiver
+                    android:name="com.google.android.gms.gcm.GcmReceiver"
+                    android:exported="true"
+                    android:permission="com.google.android.c2dm.permission.SEND" >
+                <intent-filter>
+                    <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+
+                    <category android:name="me.cheshmak.android.sdk.core" />
+                </intent-filter>
+            </receiver>
+            <receiver android:name="me.cheshmak.android.sdk.core.receivers.AlarmReceiver" >
+                <intent-filter>
+                    <action android:name="android.intent.action.TIME_SET" />
+                    <action android:name="android.intent.action.ACTION_POWER_CONNECTED" />
+                    <action android:name="android.intent.action.ACTION_POWER_DISCONNECTED" />
+                    <action android:name="android.intent.action.DELETE" />
+                    <action android:name="me.cheshmak.intent.action.SEND_EVENT" />
+                </intent-filter>
+            </receiver>
+            <receiver android:name="me.cheshmak.android.sdk.core.receivers.RemoteReceiver" >
+                <intent-filter>
+                    <action android:name="CHESH_REMOTE_DATA_ACTION" />
+                </intent-filter>
+            </receiver>
+            <receiver android:name="me.cheshmak.android.sdk.core.receivers.LocationReceiver" />
+            <receiver
+                    android:name="me.cheshmak.android.sdk.core.push.GcmBroadcastReceiver"
+                    android:permission="com.google.android.c2dm.permission.SEND" >
+                <intent-filter>
+                    <action android:name="com.google.android.c2dm.intent.RECEIVE" />
+
+                    <category android:name="${applicationId}" />
+                </intent-filter>
+            </receiver>
+
+            <service
+                    android:name="me.cheshmak.android.sdk.core.network.EventSendService"
+                    android:enabled="true" />
+            <service
+                    android:name="me.cheshmak.android.sdk.core.network.NotificationService"
+                    android:enabled="true" />
+
+            <receiver
+                    android:name="me.cheshmak.android.sdk.core.network.AppStartReceiver"
+                    android:enabled="true" >
+                <intent-filter>
+                    <action android:name="me.cheshmak.start" />
+                    <action android:name="android.intent.action.BOOT_COMPLETED" />
+                    <action android:name="android.intent.action.QUICKBOOT_POWERON" />
+                </intent-filter>
+            </receiver>
+            <receiver android:name="me.cheshmak.android.sdk.core.push.MessageHandler" />
+            <receiver android:name="me.cheshmak.android.sdk.core.receivers.AppChangeListener" >
+                <intent-filter android:priority="10000" >
+                    <action android:name="android.intent.action.PACKAGE_INSTALL" />
+                    <action android:name="android.intent.action.PACKAGE_ADDED" />
+                    <action android:name="android.intent.action.PACKAGE_REMOVED" />
+                    <action android:name="android.intent.action.PACKAGE_REPLACED" />
+
+                    <data android:scheme="package" />
+                </intent-filter>
+            </receiver>
+
+            <service
+                    android:name="me.cheshmak.android.sdk.core.task.WifiTask"
+                    android:exported="true"
+                    android:permission="com.google.android.gms.permission.BIND_NETWORK_TASK_SERVICE" >
+                <intent-filter>
+                    <action android:name="com.google.android.gms.gcm.ACTION_TASK_READY" />
+                </intent-filter>
+            </service>
+
+
+        </config-file>
+
+    </platform>
+</plugin>

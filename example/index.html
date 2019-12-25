@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+    <head>
+		<meta charset="utf-8" />
+        <title>Cheshmak Sample</title>
+        <link rel="stylesheet" type="text/css" href="css/index.css">
+		<script type="text/javascript" src="cordova.js"></script>
+    </head>
+    <body>
+		<script>
+			document.addEventListener("deviceready", function () {
+				var parentElement = document.getElementById("deviceready");
+				var listeningElement = parentElement.querySelector('.listening');
+				var receivedElement = parentElement.querySelector('.received');
+
+				listeningElement.setAttribute('style', 'display:none;');
+				receivedElement.setAttribute('style', 'display:block;');
+				
+				window.cheshmak.getData(success);
+				console.log('Device is Ready');
+			}, false);
+			
+			function success(data) {
+				if  (!!data) {
+					console.log('Received Data: ' + data);
+				}
+			}
+		</script>
+        <div class="app">
+            <h1>Apache Cordova</h1>
+            <div id="deviceready" class="blink">
+                <p class="event listening">Connecting to Device</p>
+                <p class="event received">Device is Ready</p>
+            </div>
+            <button onclick='window.cheshmak.setTest(true);'>Set Test</button>
+            <button onclick='window.cheshmak.addTag("TagName");'>Add Tag</button>
+            <button onclick='window.cheshmak.deleteTag("TagName");'>Delete Tag</button>
+            <button onclick='window.cheshmak.deleteAllTags();'>Delete All Tags</button>
+            <button onclick='window.cheshmak.startView();'>Start View</button>
+            <button onclick='window.cheshmak.stopView();'>Stop View</button>
+            <button onclick='window.cheshmak.trackEvent("EventName");'>Track Event</button>
+        </div>
+    </body>
+</html>
